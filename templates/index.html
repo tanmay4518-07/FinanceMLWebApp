@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Smart Finance Advisor</title>
+  <link rel="stylesheet" href="/static/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <div class="glass-container">
+    <h1>Smart Finance Advisor</h1>
+
+    <form method="POST">
+      {% for field in features %}
+        {% if field == "Occupation" %}
+          <input type="text" name="Occupation" placeholder="Occupation" value="{{ inputs.get('Occupation', '') }}" required>
+        {% elif field == "City_Tier" %}
+          <select name="City_Tier" required>
+            <option disabled selected>Select City Tier</option>
+            <option value="Tier 1" {% if inputs.get('City_Tier') == 'Tier 1' %}selected{% endif %}>Tier 1</option>
+            <option value="Tier 2" {% if inputs.get('City_Tier') == 'Tier 2' %}selected{% endif %}>Tier 2</option>
+            <option value="Tier 3" {% if inputs.get('City_Tier') == 'Tier 3' %}selected{% endif %}>Tier 3</option>
+          </select>
+        {% else %}
+          <input name="{{ field }}" type="number" step="any" placeholder="{{ field }}" value="{{ inputs.get(field, '') }}" required>
+        {% endif %}
+      {% endfor %}
+      <button type="submit">Get Advice</button>
+    </form>
+
+    {% if prediction %}
+      <div class="result-box">
+        <h2>Financial Category: <span class="highlight">{{ prediction }}</span></h2>
+        <ul>
+          {% for tip in tips %}
+            <li>{{ tip }}</li>
+          {% endfor %}
+        </ul>
+      </div>
+    {% endif %}
+
+    {% if chart_data %}
+      <div class="chart-box">
+        <h3>Monthly Spending Breakdown</h3>
+        <canvas id="spendingChart"></canvas>
+      </div>
+      <script>
+        const ctx = document.getElementById('spendingChart').getContext('2d');
+        new Chart(ctx, {
+          type: 'bar',
+          data: {
+            labels: {{ chart_data.keys() | list | tojson }},
+            datasets: [{
+              label: '₹ Amount',
+              data: {{ chart_data.values() | list | tojson }},
+              backgroundColor: ['#00fff7', '#ff6ec7', '#ffe600', '#00ff88', '#ff5252', '#8e44ad'],
+              borderColor: '#fff',
+              borderWidth: 1
+            }]
+          },
+          options: {
+            responsive: true,
+            scales: {
+              y: {
+                beginAtZero: true,
+                ticks: { color: "#fff" }
+              },
+              x: {
+                ticks: { color: "#fff" }
+              }
+            },
+            plugins: {
+              legend: { display: false }
+            }
+          }
+        });
+      </script>
+    {% endif %}
+  </div>
+</body>
+</html>
